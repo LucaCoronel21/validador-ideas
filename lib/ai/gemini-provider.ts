@@ -2,7 +2,8 @@ import "server-only";
 import { GoogleGenAI } from "@google/genai";
 import type { AIProvider } from "./provider";
 
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 5;
+const BASE_DELAY_MS = 1000;
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -59,7 +60,7 @@ export class GeminiProvider implements AIProvider {
         if (!isRetryable(error) || attempt === MAX_RETRIES - 1) {
           throw error;
         }
-        await sleep(500 * 2 ** attempt);
+        await sleep(BASE_DELAY_MS * 2 ** attempt);
       }
     }
 
