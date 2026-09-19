@@ -1,7 +1,7 @@
 import "server-only";
 import { getAIProvider } from "@/lib/ai";
 import { searchWeb } from "@/lib/search/tavily";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { runStep } from "./step-runner";
 
 export interface CompetenciaInput {
   idea: string;
@@ -47,23 +47,15 @@ NUNCA menciones un competidor que no aparezca en esos resultados. Cada competido
 Si los resultados no alcanzan para identificar competidores reales, decilo en el resumen y devolvé una lista vacía en "competidores" en vez de inventar.`;
 
 /**
- * Corre el agente de competencia para una validación existente y persiste
- * el resultado en validation_steps. Usa el cliente admin (bypassea RLS)
- * porque corre del lado del servidor, fuera del contexto de un usuario
- * autenticado con cookies.
+ * Único agente del pipeline que hace búsqueda web real (los demás razonan
+ * sobre el input y los resúmenes de pasos previos). Es la pieza central
+ * del requisito de "nada inventado".
  */
 export async function runCompetenciaAgent(
   validationId: string,
   input: CompetenciaInput,
 ): Promise<CompetenciaResult> {
-  const supabase = createAdminClient();
-
-  await supabase.from("validation_steps").upsert(
-    { validation_id: validationId, step_name: "competencia", status: "running" },
-    { onConflict: "validation_id,step_name" },
-  );
-
-  try {
+  return runStep(validationId, "competencia", async () => {
     const query = [input.idea, input.rubro, input.pais, "competidores"]
       .filter(Boolean)
       .join(" ");
@@ -85,35 +77,12 @@ ${searchResults
 
 Identificá competidores reales de esta idea usando SOLO estos resultados.`;
 
-    const ai = getAIProvider();
-    const result = await ai.generateStructured<CompetenciaResult>({
+    const result = await getAIProvider().generateStructured<CompetenciaResult>({
       systemPrompt: SYSTEM_PROMPT,
       prompt,
       schema: SCHEMA,
     });
 
-    await supabase.from("validation_steps").upsert(
-      {
-        validation_id: validationId,
-        step_name: "competencia",
-        status: "done",
-        result,
-        sources: searchResults,
-      },
-      { onConflict: "validation_id,step_name" },
-    );
-
-    return result;
-  } catch (error) {
-    await supabase.from("validation_steps").upsert(
-      {
-        validation_id: validationId,
-        step_name: "competencia",
-        status: "failed",
-        error: error instanceof Error ? error.message : String(error),
-      },
-      { onConflict: "validation_id,step_name" },
-    );
-    throw error;
-  }
+    return { result, sources: searchResults };
+  });
 }
