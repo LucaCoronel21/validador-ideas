@@ -31,7 +31,7 @@ Abrir [http://localhost:3000](http://localhost:3000).
 ## Estado del proyecto
 
 - [x] Etapa 1 — Scaffolding
-- [ ] Etapa 2 — Auth con Supabase
+- [x] Etapa 2 — Auth con Supabase
 - [ ] Etapa 3 — Modelo de datos + RLS
 - [ ] Etapa 4 — Capa de IA + capa de búsqueda
 - [ ] Etapa 5 — Primer agente end-to-end
