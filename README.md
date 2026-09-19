@@ -34,7 +34,7 @@ Abrir [http://localhost:3000](http://localhost:3000).
 - [x] Etapa 2 — Auth con Supabase
 - [x] Etapa 3 — Modelo de datos + RLS
 - [ ] Etapa 4 — Capa de IA + capa de búsqueda
-- [ ] Etapa 5 — Primer agente end-to-end
+- [x] Etapa 5 — Primer agente end-to-end
 - [ ] Etapa 6 — Pipeline completo + QStash
 - [ ] Etapa 7 — UI de progreso en vivo
 - [ ] Etapa 8 — Exportar + re-ejecutar
