@@ -10,7 +10,7 @@ export async function GET() {
     const admin = createAdminClient();
 
     const { data: users, error: usersError } = await admin.auth.admin.listUsers();
-    if (usersError) throw usersError;
+    if (usersError) throw new Error("STEP=listUsers " + usersError.message);
     const userId = users.users[0]?.id;
     if (!userId) {
       return NextResponse.json({ error: "No hay usuarios registrados" }, { status: 400 });
@@ -29,7 +29,10 @@ export async function GET() {
       .single();
 
     if (insertError || !validation) {
-      return NextResponse.json({ error: insertError?.message }, { status: 500 });
+      return NextResponse.json(
+        { error: "STEP=insertValidation " + insertError?.message },
+        { status: 500 },
+      );
     }
 
     const { error: stepsError } = await admin.from("validation_steps").insert(
@@ -39,9 +42,15 @@ export async function GET() {
         status: "pending",
       })),
     );
-    if (stepsError) throw stepsError;
+    if (stepsError) throw new Error("STEP=insertSteps " + stepsError.message);
 
-    await enqueueStep(validation.id, STEP_ORDER[0]);
+    try {
+      await enqueueStep(validation.id, STEP_ORDER[0]);
+    } catch (e) {
+      throw new Error(
+        "STEP=enqueueStep " + (e instanceof Error ? e.message : String(e)),
+      );
+    }
 
     return NextResponse.json({ validation_id: validation.id });
   } catch (error) {
