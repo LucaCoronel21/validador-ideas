@@ -5,7 +5,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { STEP_ORDER } from "@/lib/agents/pipeline";
 import { enqueueStep } from "@/lib/qstash";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  if (url.searchParams.has("debug")) {
+    return NextResponse.json({
+      NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL ?? null,
+    });
+  }
+
   try {
     const admin = createAdminClient();
 
