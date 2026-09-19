@@ -10,11 +10,19 @@ function sleep(ms: number) {
 }
 
 // El tier gratuito de Gemini devuelve 503 ("high demand") con bastante
-// frecuencia aunque la key y el request sean válidos. Sin retry, cualquier
-// paso del pipeline puede fallar solo por mala suerte de timing.
+// frecuencia aunque la key y el request sean válidos, y 429 ("resource
+// exhausted") cuando dos pasos del pipeline llaman a Gemini muy seguido
+// y se pasa el límite de requests por minuto. Ambos son transitorios:
+// sin retry, cualquier paso del pipeline puede fallar solo por mala
+// suerte de timing.
 function isRetryable(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
-  return message.includes('"code":503') || message.includes("UNAVAILABLE");
+  return (
+    message.includes('"code":503') ||
+    message.includes("UNAVAILABLE") ||
+    message.includes('"code":429') ||
+    message.includes("RESOURCE_EXHAUSTED")
+  );
 }
 
 export class GeminiProvider implements AIProvider {
