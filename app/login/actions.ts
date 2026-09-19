@@ -26,6 +26,7 @@ export async function sendMagicLink(
   });
 
   if (error) {
+    console.error("signInWithOtp error:", error);
     return { error: "No pudimos enviar el link. Probá de nuevo en unos minutos." };
   }
 
