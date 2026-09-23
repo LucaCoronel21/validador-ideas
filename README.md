@@ -36,6 +36,6 @@ Abrir [http://localhost:3000](http://localhost:3000).
 - [ ] Etapa 4 — Capa de IA + capa de búsqueda
 - [x] Etapa 5 — Primer agente end-to-end
 - [ ] Etapa 6 — Pipeline completo + QStash
-- [ ] Etapa 7 — UI de progreso en vivo
+- [x] Etapa 7 — UI de progreso en vivo
 - [ ] Etapa 8 — Exportar + re-ejecutar
 - [ ] Etapa 9 — Pulido + README final
