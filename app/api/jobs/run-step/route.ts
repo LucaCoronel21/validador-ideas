@@ -16,7 +16,7 @@ async function handler(request: Request) {
 
   const next = nextStep(stepName);
   if (next) {
-    await enqueueStep(validationId, next);
+    await enqueueStep(validationId, next, 15);
   }
 
   return NextResponse.json({ ok: true, step: stepName, next });
