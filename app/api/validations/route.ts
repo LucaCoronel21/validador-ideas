@@ -60,6 +60,7 @@ export async function POST(request: Request) {
   await admin.from("validation_steps").insert(
     STEP_ORDER.map((step_name) => ({
       validation_id: validation.id,
+      user_id: user.id,
       step_name,
       status: "pending",
     })),
