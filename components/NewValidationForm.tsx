@@ -36,8 +36,10 @@ export function NewValidationForm() {
       }
 
       router.push(`/validations/${data.validationId}`);
-    } catch {
-      setError("No se pudo conectar con el servidor.");
+    } catch (err) {
+      setError(
+        "DEBUG: " + (err instanceof Error ? err.message : String(err)),
+      );
       setPending(false);
     }
   }
