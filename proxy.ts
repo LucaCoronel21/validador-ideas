@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // detrás del login, solo el login, el callback de magic link, y el
 // endpoint que invoca QStash (protegido por firma, no por sesión) son
 // públicos frente a este chequeo.
-const PUBLIC_PATHS = ["/login", "/auth/callback", "/api/jobs", "/api/dev-test"];
+const PUBLIC_PATHS = ["/login", "/auth/callback", "/api/jobs"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
