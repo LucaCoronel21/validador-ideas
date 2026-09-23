@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/browser";
 import type {
   CompetenciaResult,
@@ -70,27 +71,37 @@ export function ValidationDetail({
 
   useEffect(() => {
     const supabase = createClient();
+    let channel: RealtimeChannel | undefined;
+    let cancelled = false;
 
-    const channel = supabase
-      .channel(`validation-steps-${validation.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "validation_steps",
-          filter: `validation_id=eq.${validation.id}`,
-        },
-        (payload) => {
-          const row = payload.new as StepRow;
-          if (!row?.step_name) return;
-          setSteps((prev) => new Map(prev).set(row.step_name, row));
-        },
-      )
-      .subscribe();
+    // Hay que esperar a que la sesión esté hidratada antes de suscribirse:
+    // si el canal se abre antes de que el cliente tenga el JWT, se
+    // conecta como anónimo y RLS bloquea todos los eventos en silencio.
+    supabase.auth.getSession().then(() => {
+      if (cancelled) return;
+
+      channel = supabase
+        .channel(`validation-steps-${validation.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "validation_steps",
+            filter: `validation_id=eq.${validation.id}`,
+          },
+          (payload: RealtimePostgresChangesPayload<StepRow>) => {
+            const row = payload.new as StepRow;
+            if (!row?.step_name) return;
+            setSteps((prev) => new Map(prev).set(row.step_name, row));
+          },
+        )
+        .subscribe();
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
     };
   }, [validation.id]);
 
