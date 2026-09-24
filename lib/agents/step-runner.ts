@@ -20,7 +20,14 @@ export const STEP_ORDER: StepName[] = [
  * Envuelve un agente con el ciclo de vida común: marca "running" en
  * validation_steps, corre la función, y persiste "done"/"failed" según el
  * resultado. Todos los agentes comparten esto para no repetir el
- * try/catch + upsert en cada uno.
+ * try/catch + update en cada uno.
+ *
+ * Usa UPDATE (no upsert): la fila ya existe siempre, la crea
+ * POST /api/validations antes de encolar el primer paso. Un upsert acá
+ * reconstruye el candidate row del INSERT internamente aunque termine
+ * en UPDATE por el conflicto, y eso rompe si hay columnas NOT NULL sin
+ * default que no estén en el payload (ver user_id, migración 0005) —
+ * silencioso si además no se chequea el error de la escritura.
  */
 export async function runStep<T>(
   validationId: string,
@@ -29,36 +36,36 @@ export async function runStep<T>(
 ): Promise<T> {
   const supabase = createAdminClient();
 
-  await supabase.from("validation_steps").upsert(
-    { validation_id: validationId, step_name: stepName, status: "running" },
-    { onConflict: "validation_id,step_name" },
-  );
+  const { error: runningError } = await supabase
+    .from("validation_steps")
+    .update({ status: "running" })
+    .eq("validation_id", validationId)
+    .eq("step_name", stepName);
+  if (runningError) throw runningError;
 
   try {
     const { result, sources } = await fn();
 
-    await supabase.from("validation_steps").upsert(
-      {
-        validation_id: validationId,
-        step_name: stepName,
-        status: "done",
-        result,
-        sources: sources ?? null,
-      },
-      { onConflict: "validation_id,step_name" },
-    );
+    const { error: doneError } = await supabase
+      .from("validation_steps")
+      .update({ status: "done", result, sources: sources ?? null })
+      .eq("validation_id", validationId)
+      .eq("step_name", stepName);
+    if (doneError) throw doneError;
 
     return result;
   } catch (error) {
-    await supabase.from("validation_steps").upsert(
-      {
-        validation_id: validationId,
-        step_name: stepName,
+    const { error: failedError } = await supabase
+      .from("validation_steps")
+      .update({
         status: "failed",
         error: error instanceof Error ? error.message : String(error),
-      },
-      { onConflict: "validation_id,step_name" },
-    );
+      })
+      .eq("validation_id", validationId)
+      .eq("step_name", stepName);
+    if (failedError) {
+      console.error("No se pudo persistir el estado 'failed':", failedError);
+    }
     throw error;
   }
 }
