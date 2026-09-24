@@ -10,19 +10,25 @@ function sleep(ms: number) {
 }
 
 // El tier gratuito de Gemini devuelve 503 ("high demand") con bastante
-// frecuencia aunque la key y el request sean válidos, y 429 ("resource
-// exhausted") cuando dos pasos del pipeline llaman a Gemini muy seguido
-// y se pasa el límite de requests por minuto. Ambos son transitorios:
-// sin retry, cualquier paso del pipeline puede fallar solo por mala
-// suerte de timing.
-function isRetryable(error: unknown): boolean {
+// frecuencia aunque la key y el request sean válidos — es transitorio y
+// suele resolverse en segundos, así que vale la pena reintentar adentro
+// de la misma invocación con backoff corto.
+function isRetryableTransient(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
-  return (
-    message.includes('"code":503') ||
-    message.includes("UNAVAILABLE") ||
-    message.includes('"code":429') ||
-    message.includes("RESOURCE_EXHAUSTED")
-  );
+  return message.includes('"code":503') || message.includes("UNAVAILABLE");
+}
+
+// 429 (RESOURCE_EXHAUSTED) es distinto: el free tier tiene un límite muy
+// chico de requests/minuto (5 en gemini-3.6-flash), y el error trae un
+// retryDelay de decenas de segundos. Reintentar rápido adentro de la
+// misma función NO ayuda — cada intento consume otra unidad de una
+// cuota que ya está agotada para esta ventana, empeorando la congestión.
+// Mejor fallar rápido acá y dejar que QStash reintente el paso completo
+// en una invocación aparte más adelante (su backoff entre reintentos es
+// de decenas de segundos a minutos, que es lo que realmente hace falta).
+function isRateLimited(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes('"code":429') || message.includes("RESOURCE_EXHAUSTED");
 }
 
 export class GeminiProvider implements AIProvider {
@@ -65,7 +71,10 @@ export class GeminiProvider implements AIProvider {
         return JSON.parse(text) as T;
       } catch (error) {
         lastError = error;
-        if (!isRetryable(error) || attempt === MAX_RETRIES - 1) {
+        if (isRateLimited(error)) {
+          throw error;
+        }
+        if (!isRetryableTransient(error) || attempt === MAX_RETRIES - 1) {
           throw error;
         }
         await sleep(BASE_DELAY_MS * 2 ** attempt);
