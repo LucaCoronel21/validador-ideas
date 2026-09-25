@@ -31,7 +31,7 @@ export default async function Home() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Validador de Ideas</h1>
         <form action={logout}>
-          <button type="submit" className="text-sm text-gray-500 underline">
+          <button type="submit" className="text-sm text-gray-500 underline dark:text-gray-400">
             Cerrar sesión ({user.email})
           </button>
         </form>
@@ -42,16 +42,16 @@ export default async function Home() {
       <div className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Historial</h2>
         {!validations?.length && (
-          <p className="text-sm text-gray-500">Todavía no validaste ninguna idea.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Todavía no validaste ninguna idea.</p>
         )}
         {validations?.map((v) => (
           <Link
             key={v.id}
             href={`/validations/${v.id}`}
-            className="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2 text-sm hover:bg-gray-50"
+            className="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2 text-sm hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
           >
             <span className="truncate">{v.input_idea}</span>
-            <span className="ml-2 shrink-0 text-gray-500">
+            <span className="ml-2 shrink-0 text-gray-500 dark:text-gray-400">
               {v.status === "done" && v.viability_score != null
                 ? `${v.viability_score}/10`
                 : STATUS_LABEL[v.status] ?? v.status}

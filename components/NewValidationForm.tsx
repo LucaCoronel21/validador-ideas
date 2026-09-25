@@ -43,7 +43,10 @@ export function NewValidationForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-lg border border-gray-200 p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-3 rounded-lg border border-gray-200 p-4 dark:border-gray-700"
+    >
       <h2 className="text-lg font-medium">Nueva validación</h2>
 
       <textarea
@@ -51,33 +54,33 @@ export function NewValidationForm() {
         required
         rows={4}
         placeholder="Describí tu idea de negocio en un par de líneas..."
-        className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+        className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
       />
 
       <div className="grid grid-cols-3 gap-2">
         <input
           name="rubro"
           placeholder="Rubro (opcional)"
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
         />
         <input
           name="pais"
           placeholder="País (opcional)"
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
         />
         <input
           name="mercado"
           placeholder="Mercado objetivo (opcional)"
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
         />
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-black px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="rounded-md bg-black px-3 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-black"
       >
         {pending ? "Iniciando..." : "Validar idea"}
       </button>

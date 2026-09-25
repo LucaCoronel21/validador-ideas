@@ -137,11 +137,11 @@ export function ValidationDetail({
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-12">
       <div>
-        <Link href="/" className="text-sm text-gray-500 underline">
+        <Link href="/" className="text-sm text-gray-500 underline dark:text-gray-400">
           ← Volver
         </Link>
         <h1 className="mt-2 text-xl font-semibold">{validation.input_idea}</h1>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           {[validation.input_rubro, validation.input_pais, validation.input_mercado]
             .filter(Boolean)
             .join(" · ") || "Sin datos adicionales"}
@@ -151,20 +151,20 @@ export function ValidationDetail({
       <div className="flex flex-wrap gap-2">
         <a
           href={`/api/validations/${validation.id}/export?format=md`}
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
         >
           Exportar Markdown
         </a>
         <a
           href={`/api/validations/${validation.id}/export?format=pdf`}
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
         >
           Exportar PDF
         </a>
         <button
           onClick={handleRerun}
           disabled={rerunning}
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50"
+          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:hover:bg-gray-800"
         >
           {rerunning ? "Re-ejecutando..." : "Re-ejecutar"}
         </button>
@@ -197,23 +197,23 @@ function StepCard({ validationId, step }: { validationId: string; step: StepRow 
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 p-4">
+    <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
       <div className="flex items-center justify-between">
         <h3 className="font-medium">{STEP_LABELS[step.step_name]}</h3>
         <StatusBadge status={step.status} />
       </div>
 
       {step.status === "running" && (
-        <p className="mt-2 text-sm text-gray-500">Generando...</p>
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Generando...</p>
       )}
 
       {step.status === "failed" && (
         <div className="mt-2 flex items-center justify-between gap-2">
-          <p className="text-sm text-red-600">No se pudo completar este paso.</p>
+          <p className="text-sm text-red-600 dark:text-red-400">No se pudo completar este paso.</p>
           <button
             onClick={handleRetry}
             disabled={retrying}
-            className="shrink-0 rounded-md border border-gray-300 px-2 py-1 text-xs disabled:opacity-50"
+            className="shrink-0 rounded-md border border-gray-300 px-2 py-1 text-xs disabled:opacity-50 dark:border-gray-700"
           >
             {retrying ? "Reintentando..." : "Reintentar"}
           </button>
@@ -231,10 +231,10 @@ function StepCard({ validationId, step }: { validationId: string; step: StepRow 
 
 function StatusBadge({ status }: { status: StepStatus }) {
   const styles: Record<StepStatus, string> = {
-    pending: "bg-gray-100 text-gray-500",
-    running: "bg-blue-100 text-blue-700",
-    done: "bg-green-100 text-green-700",
-    failed: "bg-red-100 text-red-700",
+    pending: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
+    running: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+    done: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+    failed: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
   };
   const labels: Record<StepStatus, string> = {
     pending: "Pendiente",
@@ -258,17 +258,17 @@ function StepResult({ step }: { step: StepRow }) {
           <p>{r.resumen}</p>
           <ul className="flex flex-col gap-1">
             {r.competidores.map((c) => (
-              <li key={c.url} className="rounded-md bg-gray-50 p-2">
+              <li key={c.url} className="rounded-md bg-gray-50 p-2 dark:bg-gray-800">
                 <a
                   href={c.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-medium text-blue-600 underline hover:text-blue-800"
+                  className="font-medium text-blue-600 underline hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                 >
                   {c.nombre}
                 </a>
-                <p className="text-gray-600">{c.descripcion}</p>
-                <p className="text-gray-500 italic">{c.diferenciador}</p>
+                <p className="text-gray-600 dark:text-gray-300">{c.descripcion}</p>
+                <p className="text-gray-500 italic dark:text-gray-400">{c.diferenciador}</p>
               </li>
             ))}
           </ul>
@@ -283,9 +283,9 @@ function StepResult({ step }: { step: StepRow }) {
           {r.segmentos.map((s) => (
             <li key={s.nombre}>
               <p className="font-medium">{s.nombre}</p>
-              <p className="text-gray-600">{s.descripcion}</p>
-              <p className="text-gray-500">Dolores: {s.dolores.join(", ")}</p>
-              <p className="text-gray-500">Dónde encontrarlos: {s.donde_encontrarlos.join(", ")}</p>
+              <p className="text-gray-600 dark:text-gray-300">{s.descripcion}</p>
+              <p className="text-gray-500 dark:text-gray-400">Dolores: {s.dolores.join(", ")}</p>
+              <p className="text-gray-500 dark:text-gray-400">Dónde encontrarlos: {s.donde_encontrarlos.join(", ")}</p>
             </li>
           ))}
         </ul>
@@ -319,8 +319,8 @@ function StepResult({ step }: { step: StepRow }) {
       return (
         <div className="flex flex-col gap-1">
           <p className="text-2xl font-semibold">{r.puntaje_viabilidad}/10</p>
-          <p className="text-gray-600">{r.justificacion}</p>
-          <p className="text-gray-500">Riesgos: {r.principales_riesgos.join(", ")}</p>
+          <p className="text-gray-600 dark:text-gray-300">{r.justificacion}</p>
+          <p className="text-gray-500 dark:text-gray-400">Riesgos: {r.principales_riesgos.join(", ")}</p>
         </div>
       );
     }
