@@ -259,7 +259,12 @@ function StepResult({ step }: { step: StepRow }) {
           <ul className="flex flex-col gap-1">
             {r.competidores.map((c) => (
               <li key={c.url} className="rounded-md bg-gray-50 p-2">
-                <a href={c.url} target="_blank" rel="noopener noreferrer" className="font-medium underline">
+                <a
+                  href={c.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-blue-600 underline hover:text-blue-800"
+                >
                   {c.nombre}
                 </a>
                 <p className="text-gray-600">{c.descripcion}</p>

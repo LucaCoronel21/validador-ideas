@@ -1,7 +1,12 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const GLOBAL_DAILY_LIMIT = Number(process.env.GLOBAL_DAILY_LIMIT ?? 20);
+// El free tier de Gemini permite 20 requests/día por modelo (confirmado
+// en el error 429: GenerateRequestsPerDayPerProjectPerModel-FreeTier,
+// quotaValue 20). Cada validación completa gasta 5 (una por agente), así
+// que el techo real de validaciones/día en TODA la app es ~4 — 3 deja
+// margen para algún reintento sin agotar la cuota del todo.
+const GLOBAL_DAILY_LIMIT = Number(process.env.GLOBAL_DAILY_LIMIT ?? 3);
 const USER_DAILY_LIMIT = Number(process.env.USER_DAILY_LIMIT ?? 3);
 
 export type RateLimitResult =
