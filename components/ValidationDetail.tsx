@@ -188,12 +188,21 @@ function StepCard({ validationId, step }: { validationId: string; step: StepRow 
 
   async function handleRetry() {
     setRetrying(true);
-    await fetch(`/api/validations/${validationId}/retry`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ stepName: step.step_name }),
-    });
-    setRetrying(false);
+    try {
+      const res = await fetch(`/api/validations/${validationId}/retry`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stepName: step.step_name }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error ?? "No se pudo reintentar este paso.");
+      }
+    } catch {
+      alert("No se pudo conectar con el servidor.");
+    } finally {
+      setRetrying(false);
+    }
   }
 
   return (
