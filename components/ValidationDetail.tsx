@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/browser";
@@ -65,9 +66,37 @@ export function ValidationDetail({
   validation: Validation;
   initialSteps: StepRow[];
 }) {
+  const router = useRouter();
   const [steps, setSteps] = useState<Map<StepName, StepRow>>(
     () => new Map(initialSteps.map((s) => [s.step_name, s])),
   );
+  const [rerunning, setRerunning] = useState(false);
+
+  async function handleRerun() {
+    setRerunning(true);
+    try {
+      const res = await fetch("/api/validations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idea: validation.input_idea,
+          rubro: validation.input_rubro ?? undefined,
+          pais: validation.input_pais ?? undefined,
+          mercado: validation.input_mercado ?? undefined,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        router.push(`/validations/${data.validationId}`);
+      } else {
+        setRerunning(false);
+        alert(data.error ?? "No se pudo re-ejecutar.");
+      }
+    } catch {
+      setRerunning(false);
+      alert("No se pudo conectar con el servidor.");
+    }
+  }
 
   useEffect(() => {
     const supabase = createClient();
@@ -117,6 +146,28 @@ export function ValidationDetail({
             .filter(Boolean)
             .join(" · ") || "Sin datos adicionales"}
         </p>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <a
+          href={`/api/validations/${validation.id}/export?format=md`}
+          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+        >
+          Exportar Markdown
+        </a>
+        <a
+          href={`/api/validations/${validation.id}/export?format=pdf`}
+          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+        >
+          Exportar PDF
+        </a>
+        <button
+          onClick={handleRerun}
+          disabled={rerunning}
+          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50"
+        >
+          {rerunning ? "Re-ejecutando..." : "Re-ejecutar"}
+        </button>
       </div>
 
       <div className="flex flex-col gap-4">

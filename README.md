@@ -37,5 +37,5 @@ Abrir [http://localhost:3000](http://localhost:3000).
 - [x] Etapa 5 — Primer agente end-to-end
 - [x] Etapa 6 — Pipeline completo + QStash
 - [x] Etapa 7 — UI de progreso en vivo
-- [ ] Etapa 8 — Exportar + re-ejecutar
+- [x] Etapa 8 — Exportar + re-ejecutar
 - [ ] Etapa 9 — Pulido + README final
